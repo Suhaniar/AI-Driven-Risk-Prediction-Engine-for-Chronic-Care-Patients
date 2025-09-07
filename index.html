@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chronic Patient Deterioration Prediction</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; }
+    h1 { color: #2c3e50; }
+    .card { background: #f9f9f9; padding: 20px; border-radius: 10px; width: 400px; }
+    input, button { margin-top: 10px; padding: 10px; width: 100%; }
+    .result { margin-top: 20px; font-weight: bold; }
+    .bar { height: 20px; background: #3498db; margin: 5px 0; }
+    table { border-collapse: collapse; margin-top: 15px; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 6px 12px; text-align: left; }
+    th { background: #eee; }
+  </style>
+</head>
+<body>
+  <h1>Chronic Deterioration Predictor</h1>
+  <div class="card">
+    <form id="predictForm">
+      <label>Patient ID:</label>
+      <input type="text" name="patient_id" placeholder="Enter patient ID" required>
+      
+      <label>Upload Patient CSV:</label>
+      <input type="file" name="file" accept=".csv,.txt" required>
+      
+      <button type="submit">Predict</button>
+    </form>
+    <div id="output" class="result"></div>
+  </div>
+
+  <div id="historySection" style="margin-top:40px;">
+    <h2>Patient History</h2>
+    <table id="historyTable">
+      <tr><th>Date</th><th>File</th><th>Prediction</th><th>Vitals</th></tr>
+    </table>
+  </div>
+
+  <script>
+  document.getElementById("predictForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    const patient_id = formData.get("patient_id");
+
+    const res = await fetch("http://127.0.0.1:5000/predict", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+    const out = document.getElementById("output");
+    out.innerHTML = "";
+
+    if (data.error) {
+      out.innerHTML = `<p style="color:red">${data.error}</p>`;
+    } else {
+      out.innerHTML = `<p>Prediction: <b>${data.prediction}</b></p>`;
+
+      if (data.vitals && Object.keys(data.vitals).length > 0) {
+        let vitalsHtml = "<h3>Patient Vitals</h3>";
+        vitalsHtml += "<table><tr><th>Vital</th><th>Value</th></tr>";
+        for (const [k, v] of Object.entries(data.vitals)) {
+          vitalsHtml += `<tr><td>${k}</td><td>${v}</td></tr>`;
+        }
+        vitalsHtml += "</table>";
+        out.innerHTML += vitalsHtml;
+      }
+
+      if (data.probabilities) {
+        out.innerHTML += "<h3>Prediction Probabilities</h3>";
+        for (const [cls, prob] of Object.entries(data.probabilities)) {
+          out.innerHTML += `
+            <div>
+              ${cls}: ${(prob*100).toFixed(2)}%
+              <div class="bar" style="width:${prob*100}%;"></div>
+            </div>
+          `;
+        }
+      }
+
+      // Load updated history after prediction
+      loadHistory(patient_id);
+    }
+  });
+
+  // Function to load history
+  async function loadHistory(patient_id) {
+    const res = await fetch(`http://127.0.0.1:5000/history/${patient_id}`);
+    const history = await res.json();
+
+    const table = document.getElementById("historyTable");
+    table.innerHTML = "<tr><th>Date</th><th>File</th><th>Prediction</th><th>Vitals</th></tr>";
+
+    history.forEach(h => {
+      let vitalsStr = "";
+      if (h.vitals && Object.keys(h.vitals).length > 0) {
+        vitalsStr = Object.entries(h.vitals).map(([k, v]) => `${k}: ${v}`).join(", ");
+      }
+
+      table.innerHTML += `
+        <tr>
+          <td>${h.created_at}</td>
+          <td>${h.file_name}</td>
+          <td>${h.prediction}</td>
+          <td>${vitalsStr}</td>
+        </tr>
+      `;
+    });
+  }
+  </script>
+
+</body>
+</html>
