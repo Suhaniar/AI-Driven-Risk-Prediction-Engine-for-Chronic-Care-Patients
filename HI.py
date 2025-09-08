@@ -585,51 +585,51 @@ def load_patient_data(file_path):
         print(f"Error loading patient data: {e}")
         return None
 
-# Specify the path to your patient data file
-PATIENT_FILE_PATH = "C:/Users/suhan/OneDrive/Desktop/PYTHON/AIPROJ/deepseek_csv_20250905_8a8113.txt" # EDIT THIS PATH
+# # Specify the path to your patient data file
+# PATIENT_FILE_PATH = "C:/Users/suhan/OneDrive/Desktop/PYTHON/AIPROJ/deepseek_csv_20250905_8a8113.txt" # EDIT THIS PATH
 
-# Load the saved model and label encoder
-try:
-    model = joblib.load('chronic_deterioration_model.pkl')
-    le_loaded = joblib.load('label_encoder.pkl')
-    print("\nModel loaded successfully for single patient prediction")
-except:
-    print("\nUsing the just-trained model for prediction")
-    model = best_model
-    le_loaded = le
+# # Load the saved model and label encoder
+# try:
+#     model = joblib.load('chronic_deterioration_model.pkl')
+#     le_loaded = joblib.load('label_encoder.pkl')
+#     print("\nModel loaded successfully for single patient prediction")
+# except:
+#     print("\nUsing the just-trained model for prediction")
+#     model = best_model
+#     le_loaded = le
 
-# Load patient data and make prediction
-patient_data = load_patient_data(PATIENT_FILE_PATH)
+# # Load patient data and make prediction
+# patient_data = load_patient_data(PATIENT_FILE_PATH)
 
-if patient_data is not None:
-    prediction_result = predict_single_patient(patient_data, model, le_loaded)
+# if patient_data is not None:
+#     prediction_result = predict_single_patient(patient_data, model, le_loaded)
 
-    print("\nSingle Patient Prediction Results:")
-    print(f"Predicted Deterioration Level: {prediction_result['prediction']}")
-    print("Probability Distribution:")
-    for cls, prob in prediction_result['probabilities'].items():
-        print(f"  {cls}: {prob:.4f}")
+#     print("\nSingle Patient Prediction Results:")
+#     print(f"Predicted Deterioration Level: {prediction_result['prediction']}")
+#     print("Probability Distribution:")
+#     for cls, prob in prediction_result['probabilities'].items():
+#         print(f"  {cls}: {prob:.4f}")
 
-    # Create visualization for the prediction
-    plt.figure(figsize=(10, 6))
-    classes = list(prediction_result['probabilities'].keys())
-    probabilities = list(prediction_result['probabilities'].values())
+#     # Create visualization for the prediction
+#     plt.figure(figsize=(10, 6))
+#     classes = list(prediction_result['probabilities'].keys())
+#     probabilities = list(prediction_result['probabilities'].values())
 
-    bars = plt.bar(classes, probabilities, color=['green', 'yellow', 'orange', 'red'])
-    plt.xlabel('Deterioration Level')
-    plt.ylabel('Probability')
-    plt.title('Predicted Deterioration Risk for Patient')
-    plt.ylim(0, 1)
+#     bars = plt.bar(classes, probabilities, color=['green', 'yellow', 'orange', 'red'])
+#     plt.xlabel('Deterioration Level')
+#     plt.ylabel('Probability')
+#     plt.title('Predicted Deterioration Risk for Patient')
+#     plt.ylim(0, 1)
 
-    # Add value labels on bars
-    for bar, prob in zip(bars, probabilities):
-        plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01, 
-                 f'{prob:.3f}', ha='center', va='bottom')
+#     # Add value labels on bars
+#     for bar, prob in zip(bars, probabilities):
+#         plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01, 
+#                  f'{prob:.3f}', ha='center', va='bottom')
 
-    plt.tight_layout()
-    plt.savefig('single_patient_prediction.png')
-    plt.show()
+#     plt.tight_layout()
+#     plt.savefig('single_patient_prediction.png')
+#     plt.show()
 
-    print("\nPrediction visualization saved as 'single_patient_prediction.png'")
-else:
-    print("Could not load patient data. Please check the file path.")
+#     print("\nPrediction visualization saved as 'single_patient_prediction.png'")
+# else:
+#     print("Could not load patient data. Please check the file path.")
